@@ -1,0 +1,223 @@
+
+{% extends "base.html" %}
+
+{% block title %}Inventory | Smart Component System{% endblock %}
+
+{% block content %}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+        <h2 class="mb-1">Component Inventory</h2>
+        <p class="text-muted mb-0">
+            Manage and track your stored electronic components.
+        </p>
+    </div>
+
+    <span class="badge text-bg-primary fs-6">
+        {{ components|length }} Components
+    </span>
+</div>
+
+<!-- Add Component Form -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-dark text-white">
+        <h5 class="mb-0">Add New Component</h5>
+    </div>
+
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('inventory') }}">
+            <div class="row g-3">
+
+                <div class="col-md-6">
+                    <label for="name" class="form-label">
+                        Component Name *
+                    </label>
+                    <input type="text"
+                           class="form-control"
+                           id="name"
+                           name="name"
+                           maxlength="100"
+                           required>
+                </div>
+
+                <div class="col-md-6">
+                    <label for="part_number" class="form-label">
+                        Part Number *
+                    </label>
+                    <input type="text"
+                           class="form-control"
+                           id="part_number"
+                           name="part_number"
+                           maxlength="50"
+                           required>
+                </div>
+
+                <div class="col-md-4">
+                    <label for="category" class="form-label">
+                        Category *
+                    </label>
+                    <input type="text"
+                           class="form-control"
+                           id="category"
+                           name="category"
+                           maxlength="50"
+                           placeholder="e.g. Resistor, IC, Sensor"
+                           required>
+                </div>
+
+                <div class="col-md-4">
+                    <label for="quantity" class="form-label">
+                        Quantity *
+                    </label>
+                    <input type="number"
+                           class="form-control"
+                           id="quantity"
+                           name="quantity"
+                           min="0"
+                           value="0"
+                           required>
+                </div>
+
+                <div class="col-md-4">
+                    <label for="location" class="form-label">
+                        Storage Location *
+                    </label>
+                    <input type="text"
+                           class="form-control"
+                           id="location"
+                           name="location"
+                           maxlength="100"
+                           placeholder="e.g. Rack A, Box 2"
+                           required>
+                </div>
+
+                <div class="col-12">
+                    <label for="description" class="form-label">
+                        Description
+                    </label>
+                    <textarea class="form-control"
+                              id="description"
+                              name="description"
+                              maxlength="300"
+                              rows="2"
+                              placeholder="Optional component details"></textarea>
+                </div>
+
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">
+                        Add Component
+                    </button>
+
+                    <button type="reset"
+                            class="btn btn-outline-secondary">
+                        Clear Form
+                    </button>
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Inventory Table -->
+<div class="card shadow-sm">
+    <div class="card-header bg-white">
+        <h5 class="mb-0">Stored Components</h5>
+    </div>
+
+    <div class="card-body">
+        {% if components %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Part Number</th>
+                        <th>Category</th>
+                        <th>Available</th>
+                        <th>Damaged</th>
+                        <th>Needs Testing</th>
+                        <th>Location</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for component in components %}
+                    <tr>
+                        <td>{{ component.id }}</td>
+
+                        <td>{{ component.name }}</td>
+
+                        <td>{{ component.part_number }}</td>
+
+                        <td>{{ component.category }}</td>
+
+                        <td>
+                            {% if component.quantity == 0 %}
+                                <span class="badge text-bg-danger">Out of stock</span>
+                            {% else %}
+                                <span class="badge text-bg-success">{{ component.quantity }}</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <span class="badge text-bg-danger">{{ component.damaged_quantity or 0 }}</span>
+                        </td>
+
+                        <td>
+                            <span class="badge text-bg-warning">{{ component.inspection_quantity or 0 }}</span>
+                        </td>
+
+                        <td>{{ component.location }}</td>
+
+                        <td>{{ component.description or '-' }}</td>
+
+                        <!-- Edit and Delete Actions -->
+                        <td>
+                            <div class="d-flex flex-wrap gap-2">
+
+                                <a href="{{ url_for(
+                                    'edit_component',
+                                    component_id=component.id
+                                ) }}"
+                                   class="btn btn-sm btn-warning">
+                                    Edit
+                                </a>
+
+                                <form method="POST"
+                                      action="{{ url_for(
+                                          'delete_component',
+                                          component_id=component.id
+                                      ) }}"
+                                      onsubmit="return confirm('Are you sure you want to delete this component? This action cannot be undone.');">
+
+                                    <button type="submit"
+                                            class="btn btn-sm btn-danger">
+                                        Delete
+                                    </button>
+
+                                </form>
+
+                            </div>
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+
+        {% else %}
+        <div class="alert alert-info mb-0">
+            No components found. Use the form above to add your first component.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

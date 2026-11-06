@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Sign up{% endblock %}
+{% block content %}
+<div class="container" style="max-width: 520px;">
+  <h2 class="mb-3">Create Student / Faculty Account</h2>
+  {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+  <form method="post">
+    <div class="mb-3"><label class="form-label">Username</label><input class="form-control" type="text" name="username" required></div>
+    <div class="mb-3"><label class="form-label">Email (optional)</label><input class="form-control" type="email" name="email"></div>
+    <div class="mb-3"><label class="form-label">Password (minimum 6 characters)</label><input class="form-control" type="password" name="password" minlength="6" required></div>
+    <div class="mb-3"><label class="form-label">Account type</label><select class="form-select" name="role" required><option value="">Choose account type</option><option value="Student">Student</option><option value="Faculty">Faculty</option></select></div>
+    <button class="btn btn-primary" type="submit">Submit registration</button>
+    <a class="btn btn-link" href="{{ url_for('login') }}">Back to login</a>
+  </form>
+  <p class="text-muted mt-3">Your account will remain pending until an Admin approves it.</p>
+</div>
+{% endblock %}

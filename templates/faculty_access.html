@@ -1,0 +1,322 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Faculty Component Requests</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+</head>
+
+<body class="bg-light">
+
+<div class="container-fluid py-4 px-3 px-md-4">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Faculty Component Requests</h2>
+            <p class="text-muted mb-0">
+                Review requests, approve quantities, and record component issues.
+            </p>
+        </div>
+
+        <a href="{{ url_for('dashboard') }}"
+           class="btn btn-outline-secondary mt-2">
+            Back to Dashboard
+        </a>
+    </div>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div
+                    class="alert alert-{{ category }} alert-dismissible fade show"
+                    role="alert"
+                >
+                    {{ message }}
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                        aria-label="Close"
+                    ></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            {% if request_rows %}
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle">
+
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Request ID</th>
+                                <th>Student</th>
+                                <th>Component</th>
+                                <th>Part Number</th>
+                                <th>Requested</th>
+                                <th>Purpose</th>
+                                <th>Status</th>
+                                <th>Approved</th>
+                                <th>Issued</th>
+                                <th>Remaining</th>
+                                <th style="min-width: 240px;">Faculty Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for row in request_rows %}
+
+                                <tr>
+                                    <td>{{ row.request.id }}</td>
+
+                                    <td>
+                                        {% if row.student %}
+                                            {{ row.student.username }}
+                                        {% else %}
+                                            Unknown student
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        {% if row.component %}
+                                            {{ row.component.name }}
+                                        {% else %}
+                                            Component unavailable
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        {% if row.component %}
+                                            {{ row.component.part_number }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+
+                                    <td>{{ row.request.quantity }}</td>
+
+                                    <td>{{ row.request.purpose }}</td>
+
+                                    <td>
+                                        {% if row.request.status == 'Pending' %}
+                                            <span class="badge bg-warning text-dark">
+                                                Pending
+                                            </span>
+                                        {% elif row.request.status == 'Approved' %}
+                                            <span class="badge bg-primary">
+                                                Approved
+                                            </span>
+                                        {% elif row.request.status == 'Partially Issued' %}
+                                            <span class="badge bg-info text-dark">
+                                                Partially Issued
+                                            </span>
+                                        {% elif row.request.status == 'Issued' %}
+                                            <span class="badge bg-success">
+                                                Issued
+                                            </span>
+                                        {% elif row.request.status == 'Rejected' %}
+                                            <span class="badge bg-danger">
+                                                Rejected
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">
+                                                {{ row.request.status }}
+                                            </span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td>{{ row.request.approved_quantity }}</td>
+
+                                    <td>{{ row.request.issued_quantity }}</td>
+
+                                    <td>
+                                        {% if row.request.status in ['Approved', 'Partially Issued'] %}
+                                            {{ [
+                                                row.request.approved_quantity
+                                                - row.request.issued_quantity,
+                                                0
+                                            ] | max }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        {% if not row.component %}
+
+                                            <span class="text-danger">
+                                                Component unavailable
+                                            </span>
+
+                                        {% elif row.request.status == 'Pending' %}
+
+                                            <!-- Approve a full or partial quantity -->
+                                            <form method="POST" class="mb-3">
+
+                                                <input
+                                                    type="hidden"
+                                                    name="request_id"
+                                                    value="{{ row.request.id }}"
+                                                >
+
+                                                <input
+                                                    type="hidden"
+                                                    name="action"
+                                                    value="approve"
+                                                >
+
+                                                <label class="form-label">
+                                                    Approve quantity
+                                                </label>
+
+                                                <input
+                                                    type="number"
+                                                    name="approved_quantity"
+                                                    class="form-control mb-2"
+                                                    min="1"
+                                                    max="{{ row.request.quantity }}"
+                                                    value="{{ row.request.quantity }}"
+                                                    required
+                                                >
+
+                                                <button
+                                                    type="submit"
+                                                    class="btn btn-success btn-sm w-100"
+                                                >
+                                                    Approve Request
+                                                </button>
+
+                                            </form>
+
+                                            <!-- Reject a pending request -->
+                                            <form method="POST"
+                                                  onsubmit="return confirm('Reject this request?');">
+
+                                                <input
+                                                    type="hidden"
+                                                    name="request_id"
+                                                    value="{{ row.request.id }}"
+                                                >
+
+                                                <input
+                                                    type="hidden"
+                                                    name="action"
+                                                    value="reject"
+                                                >
+
+                                                <button
+                                                    type="submit"
+                                                    class="btn btn-danger btn-sm w-100"
+                                                >
+                                                    Reject Request
+                                                </button>
+
+                                            </form>
+
+                                        {% elif row.request.status in ['Approved', 'Partially Issued']
+                                              and row.request.issued_quantity < row.request.approved_quantity %}
+
+                                            <!-- Record an actual issue -->
+                                            <form method="POST">
+
+                                                <input
+                                                    type="hidden"
+                                                    name="request_id"
+                                                    value="{{ row.request.id }}"
+                                                >
+
+                                                <input
+                                                    type="hidden"
+                                                    name="action"
+                                                    value="issue"
+                                                >
+
+                                                <label class="form-label">
+                                                    Quantity to issue now
+                                                </label>
+
+                                                <input
+                                                    type="number"
+                                                    name="issue_quantity"
+                                                    class="form-control mb-2"
+                                                    min="1"
+                                                    max="{{ row.request.approved_quantity - row.request.issued_quantity }}"
+                                                    required
+                                                >
+
+                                                <small class="text-muted d-block mb-2">
+                                                    Maximum remaining:
+                                                    {{ row.request.approved_quantity - row.request.issued_quantity }}
+                                                    <br>
+                                                    Current stock:
+                                                    {{ row.component.quantity }}
+                                                </small>
+
+                                                <button
+                                                    type="submit"
+                                                    class="btn btn-primary btn-sm w-100"
+                                                >
+                                                    Issue Components
+                                                </button>
+
+                                            </form>
+
+                                        {% elif row.request.status == 'Issued' %}
+
+                                            <span class="text-success fw-semibold">
+                                                Fully issued
+                                            </span>
+
+                                        {% elif row.request.status == 'Rejected' %}
+
+                                            <span class="text-danger">
+                                                Request rejected
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="text-muted">
+                                                No action available
+                                            </span>
+
+                                        {% endif %}
+                                    </td>
+                                </tr>
+
+                            {% endfor %}
+                        </tbody>
+
+                    </table>
+                </div>
+
+            {% else %}
+
+                <div class="alert alert-info mb-0">
+                    No component requests have been submitted yet.
+                </div>
+
+            {% endif %}
+
+        </div>
+    </div>
+
+</div>
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+
+</body>
+</html>

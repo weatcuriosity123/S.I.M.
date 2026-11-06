@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Account approvals{% endblock %}
+{% block content %}
+<h2>Student &amp; Faculty Accounts</h2>
+<p class="text-muted">Approve new registrations or enable/disable existing accounts.</p>
+<div class="table-responsive"><table class="table table-striped align-middle">
+<thead><tr><th>Username</th><th>Email</th><th>Role</th><th>Approval</th><th>Access</th><th>Actions</th></tr></thead><tbody>
+{% for user in users %}<tr><td>{{ user.username }}</td><td>{{ user.email or '—' }}</td><td>{{ user.role }}</td><td>{{ user.approval_status }}</td><td>{{ 'Active' if user.is_active else 'Disabled' }}</td><td><div class="d-flex flex-wrap gap-2">
+{% if user.approval_status == 'Pending' %}
+<form method="post"><input type="hidden" name="user_id" value="{{ user.id }}"><button class="btn btn-success btn-sm" name="action" value="approve">Approve</button></form>
+<form method="post"><input type="hidden" name="user_id" value="{{ user.id }}"><button class="btn btn-danger btn-sm" name="action" value="reject">Reject</button></form>
+{% elif user.approval_status == 'Approved' and user.is_active %}
+<form method="post"><input type="hidden" name="user_id" value="{{ user.id }}"><button class="btn btn-warning btn-sm" name="action" value="revoke">Revoke access</button></form>
+{% elif user.approval_status == 'Approved' %}
+<form method="post"><input type="hidden" name="user_id" value="{{ user.id }}"><button class="btn btn-success btn-sm" name="action" value="restore">Restore access</button></form>
+{% endif %}</div></td></tr>{% else %}<tr><td colspan="6">No student or faculty accounts yet.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

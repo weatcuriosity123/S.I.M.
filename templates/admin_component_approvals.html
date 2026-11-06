@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin Component Approvals</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; color: #222; background: #f6f7fb; }
+    h1 { margin-bottom: .4rem; }
+    .sub { color: #555; margin-bottom: 1.5rem; }
+    .flash { padding: .8rem 1rem; margin: .6rem 0; border-radius: 6px; background: #eef2ff; }
+    .danger { background: #fee2e2; } .success { background: #dcfce7; } .warning { background: #fef3c7; }
+    .table-wrap { overflow-x: auto; background: white; border-radius: 10px; padding: 1rem; box-shadow: 0 1px 5px #0001; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: .75rem; text-align: left; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+    th { background: #f3f4f6; }
+    button { border: 0; border-radius: 5px; padding: .55rem .8rem; cursor: pointer; color: white; }
+    .approve { background: #15803d; } .reject { background: #b91c1c; }
+    form { display: inline-block; margin: .15rem; }
+    a { color: #1d4ed8; }
+    .empty { padding: 1.2rem; color: #555; }
+  </style>
+</head>
+<body>
+  <p><a href="{{ url_for('dashboard') }}">← Back to dashboard</a></p>
+  <h1>Admin Component Approvals</h1>
+  <p class="sub">These requests have already been approved by Faculty. Admin approval is required before Faculty can issue components.</p>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="flash {{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <div class="table-wrap">
+    {% if request_rows %}
+      <table>
+        <thead><tr><th>Request</th><th>Student</th><th>Component</th><th>Requested</th><th>Faculty-approved</th><th>Purpose</th><th>Decision</th></tr></thead>
+        <tbody>
+        {% for row in request_rows %}
+          <tr>
+            <td>#{{ row.request.id }}<br><small>{{ row.request.request_date }}</small></td>
+            <td>{{ row.student.username if row.student else 'Unknown student' }}</td>
+            <td>{{ row.component.name if row.component else 'Component unavailable' }}{% if row.component %}<br><small>{{ row.component.part_number }}</small>{% endif %}</td>
+            <td>{{ row.request.quantity }}</td>
+            <td>{{ row.request.approved_quantity }}</td>
+            <td>{{ row.request.purpose }}</td>
+            <td>
+              <form method="post" onsubmit="return confirm('Approve this request for issuing?');">
+                <input type="hidden" name="request_id" value="{{ row.request.id }}">
+                <input type="hidden" name="action" value="approve">
+                <button class="approve" type="submit">Approve</button>
+              </form>
+              <form method="post" onsubmit="return confirm('Reject this request?');">
+                <input type="hidden" name="request_id" value="{{ row.request.id }}">
+                <input type="hidden" name="action" value="reject">
+                <button class="reject" type="submit">Reject</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="empty">No requests are waiting for Admin approval.</div>
+    {% endif %}
+  </div>
+</body>
+</html>

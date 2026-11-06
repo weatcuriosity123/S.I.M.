@@ -1,0 +1,126 @@
+
+{% extends "base.html" %}
+
+{% block title %}Edit Component | Smart Component System{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+
+        <div class="mb-4">
+            <h2>Edit Component</h2>
+            <p class="text-muted">
+                Update the component details below.
+            </p>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white">
+                Component ID: {{ component.id }}
+            </div>
+
+            <div class="card-body">
+                <form method="POST"
+                      action="{{ url_for('edit_component',
+                                         component_id=component.id) }}">
+
+                    <div class="row g-3">
+
+                        <div class="col-md-6">
+                            <label for="name" class="form-label">
+                                Component Name *
+                            </label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="name"
+                                   name="name"
+                                   maxlength="100"
+                                   value="{{ component.name }}"
+                                   required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="part_number" class="form-label">
+                                Part Number *
+                            </label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="part_number"
+                                   name="part_number"
+                                   maxlength="50"
+                                   value="{{ component.part_number }}"
+                                   required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="category" class="form-label">
+                                Category *
+                            </label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="category"
+                                   name="category"
+                                   maxlength="50"
+                                   value="{{ component.category }}"
+                                   required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="quantity" class="form-label">
+                                Quantity *
+                            </label>
+                            <input type="number"
+                                   class="form-control"
+                                   id="quantity"
+                                   name="quantity"
+                                   min="0"
+                                   value="{{ component.quantity }}"
+                                   required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="location" class="form-label">
+                                Storage Location *
+                            </label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="location"
+                                   name="location"
+                                   maxlength="100"
+                                   value="{{ component.location }}"
+                                   required>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="description" class="form-label">
+                                Description
+                            </label>
+                            <textarea class="form-control"
+                                      id="description"
+                                      name="description"
+                                      maxlength="300"
+                                      rows="3">{{ component.description or '' }}</textarea>
+                        </div>
+
+                        <div class="col-12 d-flex gap-2">
+                            <button type="submit"
+                                    class="btn btn-primary">
+                                Save Changes
+                            </button>
+
+                            <a href="{{ url_for('inventory') }}"
+                               class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
